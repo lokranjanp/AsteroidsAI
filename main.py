@@ -5,6 +5,7 @@ import time
 import csv
 from datetime import date, datetime
 import os
+from constants import *
 
 pygame.init()
 pygame.mixer.init()
@@ -19,11 +20,11 @@ game_time = datetime.now().time()
 game_time = game_time.strftime("%H:%M:%S")
 
 file_exists = os.path.exists(DATA_FILE) == 1
+
 if file_exists:
     file_empty = os.path.getsize(DATA_FILE) == 0
 else :
     file_empty = True
-
 
 if not file_exists:
     with open(DATA_FILE, 'w', newline='') as file:
@@ -126,11 +127,12 @@ class Fuel_Pill(pygame.sprite.Sprite):
     def __init__(self, position, direction):
         super().__init__()
         self.image = pygame.image.load("resources/bolt_gold.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, (15, 25))
+        self.image = pygame.transform.scale(self.image, (20, 30))
         self.rect = self.image.get_rect(center=position)
         self.position = pygame.Vector2(position)
         self.direction = direction
         self.distance = 0
+        self.type = "Fuel Pill"
 
     def update(self):
         self.position += self.direction * PILL_SPEED
@@ -139,6 +141,23 @@ class Fuel_Pill(pygame.sprite.Sprite):
         if self.distance > PILL_RANGE:
             self.kill()
 
+class Health_Pill(pygame.sprite.Sprite):
+    def __init__(self, position, direction):
+        super().__init__()
+        self.image = pygame.image.load("resources/pill_green.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (20, 20))
+        self.rect = self.image.get_rect(center=position)
+        self.position = pygame.Vector2(position)
+        self.direction = direction
+        self.distance = 0
+        self.type = "Health Pill"
+
+    def update(self):
+        self.position += self.direction * PILL_SPEED
+        self.distance += PILL_SPEED
+        self.rect.center = self.position
+        if self.distance > PILL_RANGE:
+            self.kill()
 
 class Healthbar():
     def __init__(self, x, y, w, h, maxh, over, below):
@@ -173,11 +192,11 @@ class Rocket(pygame.sprite.Sprite):
 
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
             self.x.x -= self.dx
-            fuel.hp -= 0.1 * (ASTEROID_SPEED/10)
+            fuel.hp -= 0.1 * (ASTEROID_SPEED/15)
 
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             self.x.x += self.dx
-            fuel.hp -= 0.1 * (ASTEROID_SPEED/10)
+            fuel.hp -= 0.1 * (ASTEROID_SPEED/15)
 
         self.position += self.x
         self.x *= self.deceleration
@@ -232,7 +251,11 @@ class Asteroid(pygame.sprite.Sprite):
 
     def shoot(self):
         pill_dir = pygame.Vector2(math.cos(math.radians(90)),math.sin(math.radians(90)))
-        pill = Fuel_Pill(self.position, pill_dir)
+        pill_type = random.randint(1,100) % 2
+        if pill_type:
+            pill = Fuel_Pill(self.position, pill_dir)
+        else:
+            pill = Health_Pill(self.position, pill_dir)
         all_sprites.add(pill)
         pills.add(pill)
 
@@ -260,10 +283,12 @@ time_elap = 0
 player_accuracy = 0
 asteroids_hit = 0
 death_reason = ""
+speed_modif = 0
 
 frame_count = 0
 start = time.time()
 while run:
+    speed_modif = ASTEROID_SPEED
     game_score.display_score(screen)
     if health.hp <= 0:
         asteroids_hit = game_score.asteroids_hit
@@ -301,23 +326,30 @@ while run:
                 explo_sound.play()
                 bullet.kill()
                 mid = time.time()
-                if game_score.asteroids_hit%5 == 0 :
+                if game_score.asteroids_hit % (random.randint(1, 10)) == 0:
                     asteroid.shoot()
                 asteroid.kill()
                 ASTEROID_SPEED += 0.15
 
-    for asteroid in asteroids :
-        if player.rect.collidepoint(asteroid.position.x,asteroid.position.y):
+    for asteroid in asteroids:
+        if player.rect.collidepoint(asteroid.position.x, asteroid.position.y):
             explo_sound.play()
             asteroid.kill()
-            health.hp -= 15
+            health.hp -= 1.5 * ASTEROID_SPEED
 
-    for pill in pills :
-        if player.rect.collidepoint(pill.position.x,pill.position.y):
-            pill.kill()
-            fuel.hp += 10
-            if fuel.hp > fuel.max :
-                fuel.hp = fuel.max
+    for pill in pills:
+        if player.rect.collidepoint(pill.position.x, pill.position.y):
+            if pill.type == "Fuel Pill":
+                pill.kill()
+                fuel.hp += 10
+                if fuel.hp > fuel.max:
+                    fuel.hp = fuel.max
+
+            if pill.type == "Health Pill":
+                pill.kill()
+                health.hp += 20
+                if health.hp > health.max:
+                    health.hp = health.max
 
     frame_count += 1
     if frame_count % SPAWN_RATE == 0:
