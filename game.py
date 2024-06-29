@@ -8,7 +8,6 @@ import os
 from constants import *
 
 pygame.init()
-pygame.mixer.init()
 pygame.font.init()
 font_score = pygame.font.SysFont('Bauhaus 93', 30)
 screen = pygame.display.set_mode((600, 600))
@@ -51,8 +50,6 @@ rocket_img = pygame.image.load("resources/ship.png").convert()
 rocket_img = pygame.transform.scale(rocket_img, (40, 40))
 rocket_img.set_colorkey(BLACK)
 rocket_img = pygame.transform.rotate(rocket_img, -90)
-shoot_sound = pygame.mixer.Sound("resources/bf.wav")
-explo_sound = pygame.mixer.Sound("resources/explosion.wav")
 
 ast_img1 = pygame.image.load("resources/ast1.png")
 ast_img1 = pygame.transform.scale(ast_img1, (40, 40))
@@ -313,7 +310,6 @@ while run:
             if event.key == pygame.K_SPACE:
                 game_score.bullet_fired()
                 player.shoot()
-                shoot_sound.play()
 
     screen.fill('black')
     all_sprites.update()
@@ -333,7 +329,6 @@ while run:
 
     for asteroid in asteroids:
         if player.rect.collidepoint(asteroid.position.x, asteroid.position.y):
-            explo_sound.play()
             asteroid.kill()
             health.hp -= 1.5 * ASTEROID_SPEED
 
