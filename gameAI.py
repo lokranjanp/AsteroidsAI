@@ -259,7 +259,7 @@ class GameAI:
         all_sprites.add(self.asteroids)
         all_sprites.add(self.pills)
 
-    def get_states(self, asteroids):
+    def get_states(self):
         states_to_return = []
         states_to_return.append(self.ship.x)
         states_to_return.append(self.health.hp)
