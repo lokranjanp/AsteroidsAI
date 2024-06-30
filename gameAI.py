@@ -201,13 +201,17 @@ class Asteroid(pygame.sprite.Sprite):
         pills.add(pill)
 
 
-def spawn_asteroid():
-
-
 class GameAI:
     def __init__(self):
         pygame.init()
         pygame.font.init()
+        self.start = 0
+        self.end = 0
+        self.death_reason = ""
+        self.current_score = 0
+        self.end = 0
+        self.player_accuracy = 0
+        self.asteroids_hit = 0
         self.font_score = pygame.font.SysFont('Bauhaus 93', 30)
         self.screen = pygame.display.set_mode((600, 600))
         self.screen.fill(BLACK)
@@ -244,6 +248,7 @@ class GameAI:
 
     def reset_game(self):
         self.firstgame = False
+        self.start = time.time()
         self.asteroids = pygame.sprite.Group()
         self.pills = pygame.sprite.Group()
         self.health = Healthbar(20, 10, 100, 15, 100, "green", "red")
@@ -281,6 +286,19 @@ class GameAI:
                 states_to_return.append(0)
 
     def play_action(self, act):
+        self.current_score = self.game_score.get_score()
+        self.player_accuracy = self.game_score.get_accuracy()
+        self.asteroids_hit = self.game_score.asteroids_hit
+
+        if self.health.hp <= 0:
+            self.death_reason = "Spacecraft Health 0"
+            self.ship.kill()
+            self.end = time.time()
+        elif self.fuel.hp <= 0:
+            self.death_reason = "Spacecraft Fuel 0"
+            self.ship.kill()
+            self.end = time.time()
+
         self.clock.tick(constants.FPS)
         global action
         action = getaction(act)
@@ -292,10 +310,16 @@ class GameAI:
         if action == 'fire':
             self.ship.shoot()
 
+        all_sprites.draw(self.screen)
         all_sprites.update()
         asteroid = Asteroid(constants.ASTEROID_SPEED)
         all_sprites.add(asteroid)
         asteroids.add(asteroid)
+
+        for asteroid in asteroids:
+            if self.ship.rect.collidepoint(asteroid.position.x, asteroid.position.y):
+                asteroid.kill()
+                self.health.hp -= 1.5 * constants.ASTEROID_SPEED
 
         for bullet in bullets:
             for asteroid in asteroids:
@@ -307,76 +331,16 @@ class GameAI:
                     asteroid.kill()
                     constants.ASTEROID_SPEED += 0.15
 
+        for pill in pills:
+            if self.ship.rect.collidepoint(pill.position.x, pill.position.y):
+                if pill.type == "Fuel Pill":
+                    pill.kill()
+                    self.fuel.hp += 10
+                    if self.fuel.hp > self.fuel.max:
+                        self.fuel.hp = self.fuel.max
 
-# Create player
-
-current_score = 0
-end = 0
-time_elap = 0
-player_accuracy = 0
-asteroids_hit = 0
-death_reason = ""
-
-frame_count = 0
-start = time.time()
-while run:
-    speed_modif = ASTEROID_SPEED
-    game_score.display_score(screen)
-    if health.hp <= 0:
-        asteroids_hit = game_score.asteroids_hit
-        death_reason = "Spacecraft Health 0"
-        player.kill()
-        run = False
-        end = time.time()
-    elif fuel.hp <= 0:
-        death_reason = "Spacecraft Fuel 0"
-        player.kill()
-        run = False
-        end = time.time()
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            asteroids_hit = game_score.asteroids_hit
-            death_reason = "Player Quit"
-            run = False
-            end = time.time()
-
-    for asteroid in asteroids:
-        if player.rect.collidepoint(asteroid.position.x, asteroid.position.y):
-            asteroid.kill()
-            health.hp -= 1.5 * ASTEROID_SPEED
-
-    for pill in pills:
-        if player.rect.collidepoint(pill.position.x, pill.position.y):
-            if pill.type == "Fuel Pill":
-                pill.kill()
-                fuel.hp += 10
-                if fuel.hp > fuel.max:
-                    fuel.hp = fuel.max
-
-            if pill.type == "Health Pill":
-                pill.kill()
-                health.hp += 20
-                if health.hp > health.max:
-                    health.hp = health.max
-
-    frame_count += 1
-    if frame_count % SPAWN_RATE == 0:
-        spawn_asteroid()
-
-    current_score = game_score.get_score()
-    player_accuracy = game_score.get_accuracy()
-    asteroids_hit = game_score.asteroids_hit
-    game_score.display_score(screen)
-    all_sprites.draw(screen)
-    health.draw(screen)
-    pygame.display.flip()
-    clock.tick(80)
-
-end = time.time()
-pygame.quit()
-time_elap = (end - start)
-with open(DATA_FILE, 'a', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(
-        [game_date, game_time, round(time_elap, 2), death_reason, current_score, player_accuracy, asteroids_hit])
+                if pill.type == "Health Pill":
+                    pill.kill()
+                    self.health.hp += 20
+                    if self.health.hp > self.health.max:
+                        self.health.hp = self.health.max
