@@ -4,7 +4,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 from IPython import display
-from game import Rocket
+from gameAI import Rocket
 class AsteroidGameEnv:
     def __init__(self, player):
         self.reset()
