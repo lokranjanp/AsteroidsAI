@@ -2,7 +2,6 @@ import torch
 from collections import deque
 import random
 import numpy as np
-from opt_einsum.backends import torch
 from gameAI import GameAI
 from constants import *
 from DQN import *
@@ -80,11 +79,9 @@ def train():
         first_state = torch.tensor(first_state, dtype=torch.float)
         frame_counter += 1
         move = agent.get_action(first_state)
-        print(type(first_state))
         if (frame_counter % SPAWN_RATE) == 0:
             game.spawn_asteroids()
 
-        print(move)
         reward, done, score = game.play_action(move)
 
         second_state = agent.get_state(game)

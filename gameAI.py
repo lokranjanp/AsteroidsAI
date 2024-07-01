@@ -121,11 +121,11 @@ class Rocket(pygame.sprite.Sprite):
         self.x = pygame.Vector2(0, 2)
         self.deceleration = 0.95
 
-    def update(self, fuel, screen):
+    def update(self, fuel):
         global action
         if action == "move_left":
             self.x.x -= self.dx
-            fuel.hp -= 0.1 * (ASTEROID_SPEED / 15)
+
 
         if action == "move_right":
             self.x.x += self.dx
@@ -136,8 +136,8 @@ class Rocket(pygame.sprite.Sprite):
         if self.position.x < 20:
             self.position.x = 20
 
-        if self.position.x > screen.get_width() - 20:
-            self.position.x = screen.get_width() - 20
+        if self.position.x > constants.SCREEN_WIDTH - 20:
+            self.position.x = constants.SCREEN_WIDTH - 20
 
         self.image = pygame.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect(center=self.position)
@@ -178,11 +178,11 @@ class Asteroid(pygame.sprite.Sprite):
         self.position = pygame.Vector2(self.rect.topleft)
         self.speed = pygame.Vector2(speed)
 
-    def update(self, screen):
+    def update(self):
         self.position.x += self.direction.x * self.speed.x
         self.position.y += self.direction.y * self.speed.y
         self.rect.center = self.position
-        if self.rect.top > screen.get_height() + 20 or self.rect.left < -20 or self.rect.right > screen.get_width() + 20:
+        if self.rect.top > constants.SCREEN_HEIGHT + 20 or self.rect.left < -20 or self.rect.right > constants.SCREEN_WIDTH + 20:
             self.kill()
 
     def shoot(self):
@@ -259,10 +259,8 @@ class GameAI:
         self.start = time.time()
 
     def get_states(self):
-        time.sleep(5)
         states_to_return = [self.ship.x.x, self.health.h, self.fuel.hp, self.game_score.accuracy, self.reward]
         asteroids_info = []
-        print(len(self.asteroids))
         for asteroid in self.asteroids:
             asteroids_info.extend([
                 asteroid.rect.centerx,
@@ -281,7 +279,7 @@ class GameAI:
         asteroid = Asteroid(constants.ASTEROID_SPEED, self.screen, self.ast_imgs)
         all_sprites.add(asteroid)
         self.asteroids.add(asteroid)
-        all_sprites.update(self.screen)
+        all_sprites.update()
 
     def play_action(self, act):
         self.done = False
@@ -314,7 +312,6 @@ class GameAI:
 
         all_sprites.draw(self.screen)
         all_sprites.update()
-
         for asteroid in self.asteroids:
             if self.ship.rect.collidepoint(asteroid.position.x, asteroid.position.y):
                 asteroid.kill()
@@ -329,6 +326,7 @@ class GameAI:
                     if self.game_score.asteroids_hit % (random.randint(1, 10)) == 0:
                         asteroid.shoot()
                     asteroid.kill()
+                    self.spawn_asteroids()
                     self.reward += 10
                     constants.ASTEROID_SPEED += 0.15
 
