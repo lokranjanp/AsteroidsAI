@@ -40,7 +40,7 @@ class QTrainer:
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
 
     def train_step(self, state, action, reward, next_state, done):
-        state = torch.tensor(state, dtype=torch.float).to(self.device)
+        state = state.clone().detach().float().to(self.device)
         next_state = torch.tensor(next_state, dtype=torch.float).to(self.device)
 
         action = torch.tensor(action, dtype=torch.float).to(self.device)

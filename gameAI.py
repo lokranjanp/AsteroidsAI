@@ -31,10 +31,12 @@ class Game_Score:
     def asteroid_hit(self):
         self.asteroids_hit += 1
         self.update_score()
+        self.update_accuracy()
 
     def bullet_fired(self):
         self.bullets_used += 1
         self.update_score()
+        self.update_accuracy()
 
     def update_score(self):
         self.score = (self.asteroids_hit * 100) - (self.bullets_used * 2)
@@ -108,11 +110,9 @@ class Healthbar(pygame.sprite.Sprite):
         pygame.draw.rect(screen, self.below, (self.x, self.y, self.w, self.h))
         pygame.draw.rect(screen, self.over, (self.x, self.y, self.hp, self.h))
         health_text = font_score.render('H', True, (255, 255, 255))
-        health_text_rect = health_text.get_rect()
         screen.blit(health_text, (5, 10))
 
         fuel_text = font_score.render('F', True, (255, 255, 255))
-        fuel_text_rect = fuel_text.get_rect()
         screen.blit(fuel_text, (screen.get_width() - 118, 10))
 
 
@@ -131,9 +131,11 @@ class Rocket(pygame.sprite.Sprite):
     def update(self):
         global action
         if action == "move_left":
+            print("moved left")
             self.x.x -= self.dx
 
         if action == "move_right":
+            print("moved right")
             self.x.x += self.dx
 
         self.position += self.x
@@ -243,21 +245,18 @@ class GameAI:
         self.pill_green = pygame.image.load("resources/bolt_gold.png")
         self.pill_green = pygame.transform.scale(self.pill_green, (20, 20))
         self.pill_green.set_colorkey(BLACK)
+        self.ast_imgs = [self.ast_img1, self.ast_img2, self.ast_img3, self.ast_img4]
 
+        self.reset_game()
+
+    def reset_game(self):
+        all_sprites.empty()
+        self.ship = Rocket(self.rocket_img, self.screen)
         self.asteroids = pygame.sprite.Group()
         self.pills = pygame.sprite.Group()
         self.health = Healthbar(20, 10, 100, 15, 100, "green", "red")
         self.fuel = Healthbar(self.screen.get_width() - 105, 10, 100, 15, 100, "yellow", "black")
         self.game_score = Game_Score()
-
-        self.ast_imgs = [self.ast_img1, self.ast_img2, self.ast_img3, self.ast_img4]
-        self.ship = Rocket(self.rocket_img, self.screen)
-        all_sprites.add(self.ship)
-        all_sprites.add(self.asteroids)
-        all_sprites.add(self.pills)
-
-
-    def reset_game(self):
         all_sprites.add(self.ship)
         all_sprites.add(self.asteroids)
         all_sprites.add(self.pills)
@@ -298,11 +297,14 @@ class GameAI:
             self.death_reason = "Spacecraft Health 0"
             self.ship.kill()
             self.end = time.time()
+            self.reset_game()
             self.done = True
+
         elif self.fuel.hp <= 0:
             self.death_reason = "Spacecraft Fuel 0"
             self.ship.kill()
             self.end = time.time()
+            self.reset_game()
             self.done = True
 
         self.clock.tick(constants.FPS)
@@ -315,6 +317,7 @@ class GameAI:
 
         if action == 'fire':
             self.ship.shoot()
+            self.game_score.bullet_fired()
 
         if action == 'move_left' or action == 'move_right':
             self.fuel.hp -= 0.1 * (constants.ASTEROID_SPEED/15)
@@ -342,6 +345,10 @@ class GameAI:
                     self.spawn_asteroids()
                     self.reward += 10
                     constants.ASTEROID_SPEED += 0.15
+                    print(f"Accuracy : {self.game_score.accuracy}")
+
+        if self.game_score.accuracy < 0.1:
+            self.reward -= 100
 
         for pill in pills:
             if self.ship.rect.colliderect(pill.rect):

@@ -35,12 +35,11 @@ class Agent:
         self.memory.append((state, action, reward, next_state, done))
 
     def train_long(self):
+        mini_batch = self.memory
         if len(self.memory) > BATCH_SIZE:
-            minibatch = random.sample(self.memory, BATCH_SIZE)
-        else:
-            mini_batch = self.memory
+            mini_batch = random.sample(self.memory, BATCH_SIZE)
 
-        states, actions, rewards, next_states, dones = zip(*minibatch)
+        states, actions, rewards, next_states, dones = zip(*mini_batch)
         self.trainer.train_step(states, actions, rewards, next_states, dones)
 
     def train_short(self, state, action, reward, next_state, done):
