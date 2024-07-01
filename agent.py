@@ -2,7 +2,7 @@ import torch
 from collections import deque
 import random
 import numpy as np
-from opt_einsum.backends import torch
+# from opt_einsum.backends import torch
 from gameAI import GameAI
 from constants import *
 from DQN import *
