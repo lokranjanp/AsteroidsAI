@@ -2,8 +2,9 @@ import math
 import pygame
 import random
 import time
-from constants import *
+
 import constants
+from constants import *
 
 all_sprites = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
@@ -121,15 +122,15 @@ class Rocket(pygame.sprite.Sprite):
         self.x = pygame.Vector2(0, 2)
         self.deceleration = 0.95
 
-    def update(self, fuel):
+    def update(self):
         global action
-        if action == "move_left":
-            self.x.x -= self.dx
+        # if action == "move_left":
+        #     self.x.x -= self.dx
+        #
+        #
+        # if action == "move_right":
+        #     self.x.x += self.dx
 
-
-        if action == "move_right":
-            self.x.x += self.dx
-            fuel.hp -= 0.1 * (ASTEROID_SPEED / 15)
 
         self.position += self.x
         self.x *= self.deceleration
@@ -179,6 +180,7 @@ class Asteroid(pygame.sprite.Sprite):
         self.speed = pygame.Vector2(speed)
 
     def update(self):
+        # screen.fill(black)
         self.position.x += self.direction.x * self.speed.x
         self.position.y += self.direction.y * self.speed.y
         self.rect.center = self.position
@@ -247,6 +249,7 @@ class GameAI:
 
         self.ast_imgs = [self.ast_img1, self.ast_img2, self.ast_img3, self.ast_img4]
         self.ship = Rocket(self.rocket_img, self.screen)
+        all_sprites.add(self.ship)
         self.spawn_asteroids()
 
     def reset_game(self):
@@ -309,8 +312,11 @@ class GameAI:
 
         if action == 'fire':
             self.ship.shoot()
-
+        elif action == 'move_left' or action == 'move_right':
+            self.fuel.hp -=  0.1 * (constants.ASTEROID_SPEED / 15)
+        self.screen.fill(BLACK)
         all_sprites.draw(self.screen)
+
         all_sprites.update()
         for asteroid in self.asteroids:
             if self.ship.rect.collidepoint(asteroid.position.x, asteroid.position.y):
@@ -344,5 +350,7 @@ class GameAI:
                     self.health.hp += 20
                     if self.health.hp > self.health.max:
                         self.health.hp = self.health.max
+
+
         pygame.display.flip()
         return self.reward, self.done, self.current_score

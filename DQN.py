@@ -20,7 +20,7 @@ class DQN(nn.Module):
         x = self.fc3(x)
         return x
 
-    def save_model(self, file_name = 'model.pth'):
+    def save_model(self, file_name='model.pth'):
         model_folder = './model'
         if not os.path.exists(model_folder):
             os.makedirs(model_folder)
