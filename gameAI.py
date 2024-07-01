@@ -260,7 +260,7 @@ class GameAI:
 
     def get_states(self):
         time.sleep(5)
-        states_to_return = [self.ship.x.x, self.health.h, self.fuel.hp]
+        states_to_return = [self.ship.x.x, self.health.h, self.fuel.hp, self.game_score.accuracy, self.reward]
         asteroids_info = []
         print(len(self.asteroids))
         for asteroid in self.asteroids:
@@ -313,7 +313,7 @@ class GameAI:
             self.ship.shoot()
 
         all_sprites.draw(self.screen)
-        all_sprites.update(self.screen)
+        all_sprites.update()
 
         for asteroid in self.asteroids:
             if self.ship.rect.collidepoint(asteroid.position.x, asteroid.position.y):
@@ -346,5 +346,5 @@ class GameAI:
                     self.health.hp += 20
                     if self.health.hp > self.health.max:
                         self.health.hp = self.health.max
-
+        pygame.display.flip()
         return self.reward, self.done, self.current_score

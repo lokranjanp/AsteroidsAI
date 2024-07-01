@@ -4,11 +4,19 @@ import random
 import numpy as np
 from opt_einsum.backends import torch
 from gameAI import GameAI
+from constants import *
+from DQN import *
 
 MAX_MEM = 400000
 BATCH_SIZE = 2000
 
 learning_rate = 0.01
+
+
+def normalise(state):
+    mean = np.mean(state)
+    std = np.std(state)
+    return np.array([(state - mean) / std for state in state])
 
 
 class Agent:
@@ -17,8 +25,8 @@ class Agent:
         self.epsilon = 0
         self.epsilon_decay = 0.995
         self.memory = deque(maxlen=MAX_MEM)
-        self.model = None
-        self.trainer = None
+        self.model = DQN(45, 4)
+        self.trainer = QTrainer(self.model, learning_rate, 0.9)
 
     def get_state(self, game):
         state = game.get_states()
@@ -60,7 +68,7 @@ def train():
     plot_score = []
     plot_mean = []
     record = -1
-
+    frame_counter = 0
     last_10_scores = deque(maxlen=10)
 
     agent = Agent()
@@ -68,7 +76,14 @@ def train():
 
     while True:
         first_state = agent.get_state(game)
+        first_state = normalise(first_state)
+        first_state = torch.tensor(first_state, dtype=torch.float)
+        frame_counter += 1
         move = agent.get_action(first_state)
+        print(type(first_state))
+        if (frame_counter % SPAWN_RATE) == 0:
+            game.spawn_asteroids()
+
         print(move)
         reward, done, score = game.play_action(move)
 
