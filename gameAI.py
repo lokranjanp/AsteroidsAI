@@ -326,14 +326,14 @@ class GameAI:
         self.health.draw(self.screen)
 
         for asteroid in self.asteroids:
-            if self.ship.rect.collidepoint(asteroid.position.x, asteroid.position.y):
+            if self.ship.rect.colliderect(asteroid.rect):
                 asteroid.kill()
                 self.reward -= 15
                 self.health.hp -= 1.5 * constants.ASTEROID_SPEED
 
         for bullet in bullets:
             for asteroid in self.asteroids:
-                if asteroid.rect.collidepoint(bullet.position.x, bullet.position.y):
+                if asteroid.rect.colliderect(bullet.rect):
                     self.game_score.asteroid_hit()
                     bullet.kill()
                     if self.game_score.asteroids_hit % (random.randint(1, 100)) == 0:
@@ -344,7 +344,7 @@ class GameAI:
                     constants.ASTEROID_SPEED += 0.15
 
         for pill in pills:
-            if self.ship.rect.collidepoint(pill.position.x, pill.position.y):
+            if self.ship.rect.colliderect(pill.rect):
                 self.reward += 10
                 if pill.type == "Fuel Pill":
                     pill.kill()
