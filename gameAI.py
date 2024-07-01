@@ -2,9 +2,8 @@ import math
 import pygame
 import random
 import time
-
-import constants
 from constants import *
+import constants
 
 all_sprites = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
@@ -105,18 +104,25 @@ class Healthbar(pygame.sprite.Sprite):
         self.below = below
 
     def draw(self, screen):
+        font_score = pygame.font.SysFont('Bauhaus 93', 30)
         pygame.draw.rect(screen, self.below, (self.x, self.y, self.w, self.h))
         pygame.draw.rect(screen, self.over, (self.x, self.y, self.hp, self.h))
+        health_text = font_score.render('H', True, (255, 255, 255))
+        health_text_rect = health_text.get_rect()
+        screen.blit(health_text, (5, 10))
+
+        fuel_text = font_score.render('F', True, (255, 255, 255))
+        fuel_text_rect = fuel_text.get_rect()
+        screen.blit(fuel_text, (screen.get_width() - 118, 10))
 
 
 class Rocket(pygame.sprite.Sprite):
     def __init__(self, rocket_img, screen):
-        super().__init__()
+        pygame.sprite.Sprite.__init__(self)
         self.original_image = rocket_img
         self.image = self.original_image.copy()
         self.rect = self.image.get_rect(center=(screen.get_width() // 2, screen.get_height() - 100))
         self.angle = 90
-        self.rotation_speed = 5
         self.dx = 0.1
         self.position = pygame.Vector2(self.rect.center)
         self.x = pygame.Vector2(0, 2)
@@ -124,13 +130,11 @@ class Rocket(pygame.sprite.Sprite):
 
     def update(self):
         global action
-        # if action == "move_left":
-        #     self.x.x -= self.dx
-        #
-        #
-        # if action == "move_right":
-        #     self.x.x += self.dx
+        if action == "move_left":
+            self.x.x -= self.dx
 
+        if action == "move_right":
+            self.x.x += self.dx
 
         self.position += self.x
         self.x *= self.deceleration
@@ -180,7 +184,6 @@ class Asteroid(pygame.sprite.Sprite):
         self.speed = pygame.Vector2(speed)
 
     def update(self):
-        # screen.fill(black)
         self.position.x += self.direction.x * self.speed.x
         self.position.y += self.direction.y * self.speed.y
         self.rect.center = self.position
@@ -250,13 +253,14 @@ class GameAI:
         self.ast_imgs = [self.ast_img1, self.ast_img2, self.ast_img3, self.ast_img4]
         self.ship = Rocket(self.rocket_img, self.screen)
         all_sprites.add(self.ship)
-        self.spawn_asteroids()
+        all_sprites.add(self.asteroids)
+        all_sprites.add(self.pills)
+
 
     def reset_game(self):
         all_sprites.add(self.ship)
         all_sprites.add(self.asteroids)
         all_sprites.add(self.pills)
-        self.spawn_asteroids()
         self.current_score = 0
         self.reward = 0
         self.start = time.time()
@@ -286,7 +290,6 @@ class GameAI:
 
     def play_action(self, act):
         self.done = False
-        self.spawn_asteroids()
         self.current_score = self.game_score.get_score()
         self.player_accuracy = self.game_score.get_accuracy()
         self.asteroids_hit = self.game_score.asteroids_hit
@@ -312,12 +315,16 @@ class GameAI:
 
         if action == 'fire':
             self.ship.shoot()
-        elif action == 'move_left' or action == 'move_right':
-            self.fuel.hp -=  0.1 * (constants.ASTEROID_SPEED / 15)
-        self.screen.fill(BLACK)
-        all_sprites.draw(self.screen)
 
+        if action == 'move_left' or action == 'move_right':
+            self.fuel.hp -= 0.1 * (constants.ASTEROID_SPEED/15)
+
+        self.screen.fill(BLACK)
         all_sprites.update()
+        all_sprites.draw(self.screen)
+        self.fuel.draw(self.screen)
+        self.health.draw(self.screen)
+
         for asteroid in self.asteroids:
             if self.ship.rect.collidepoint(asteroid.position.x, asteroid.position.y):
                 asteroid.kill()
@@ -329,7 +336,7 @@ class GameAI:
                 if asteroid.rect.collidepoint(bullet.position.x, bullet.position.y):
                     self.game_score.asteroid_hit()
                     bullet.kill()
-                    if self.game_score.asteroids_hit % (random.randint(1, 10)) == 0:
+                    if self.game_score.asteroids_hit % (random.randint(1, 100)) == 0:
                         asteroid.shoot()
                     asteroid.kill()
                     self.spawn_asteroids()
@@ -351,6 +358,6 @@ class GameAI:
                     if self.health.hp > self.health.max:
                         self.health.hp = self.health.max
 
-
         pygame.display.flip()
+
         return self.reward, self.done, self.current_score

@@ -29,7 +29,6 @@ class Agent:
 
     def get_state(self, game):
         state = game.get_states()
-        print(state)
         return np.array(state, dtype=int)
 
     def remember(self, state, action, reward, next_state, done):
