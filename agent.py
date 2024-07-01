@@ -3,7 +3,6 @@ from collections import deque
 import random
 import numpy as np
 from opt_einsum.backends import torch
-
 from gameAI import GameAI
 
 MAX_MEM = 400000
@@ -22,7 +21,8 @@ class Agent:
         self.trainer = None
 
     def get_state(self, game):
-        state = game.get_states(game)
+        state = game.get_states()
+        print(state)
         return np.array(state, dtype=int)
 
     def remember(self, state, action, reward, next_state, done):
@@ -44,10 +44,10 @@ class Agent:
         self.epsilon = 100 - self.num_games
         final_move = [0, 0, 0, 0]
 
-        if random.randint(0, 200) < self.epsilon:
+        if np.random.rand() < self.epsilon/100:
             move = random.randint(0, 3)
             final_move[move] = 1
-        else :
+        else:
             state00 = torch.tensor(state, dtype=torch.float)
             pred = self.model(state00)
             move = torch.argmax(pred).item()
@@ -69,6 +69,7 @@ def train():
     while True:
         first_state = agent.get_state(game)
         move = agent.get_action(first_state)
+        print(move)
         reward, done, score = game.play_action(move)
 
         second_state = agent.get_state(game)

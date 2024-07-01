@@ -1,5 +1,5 @@
 # Load the model
-agent.load("asteroid-dqn-950.keras")
+agent.load("asteroid-dqn.keras")
 
 # Evaluate the model
 for e in range(10):

@@ -2,18 +2,12 @@ import math
 import pygame
 import random
 import time
-import csv
-from datetime import date, datetime
-import os
-
 from constants import *
 import constants
 
-
-global all_sprites
-global bullets
-global pills
-global asteroids
+all_sprites = pygame.sprite.Group()
+bullets = pygame.sprite.Group()
+pills = pygame.sprite.Group()
 
 def getaction(act):
     if act == [1, 0, 0, 0]:
@@ -171,9 +165,8 @@ class Bullet(pygame.sprite.Sprite):
         if self.distance > BULLET_RANGE:
             self.kill()
 
-
 class Asteroid(pygame.sprite.Sprite):
-    def __init__(self, speed, ast_imgs, screen):
+    def __init__(self, speed, screen, ast_imgs):
         super().__init__()
         self.image = random.choice(ast_imgs)
         self.rect = self.image.get_rect()
@@ -243,47 +236,51 @@ class GameAI:
         self.pill_green = pygame.transform.scale(self.pill_green, (20, 20))
         self.pill_green.set_colorkey(BLACK)
 
-        self.ast_imgs = [self.ast_img1, self.ast_img2, self.ast_img3, self.ast_img4]
-        self.ship = Rocket(self.rocket_img, self.screen)
-
-    def reset_game(self):
-        self.firstgame = False
-        self.start = time.time()
         self.asteroids = pygame.sprite.Group()
         self.pills = pygame.sprite.Group()
         self.health = Healthbar(20, 10, 100, 15, 100, "green", "red")
         self.fuel = Healthbar(self.screen.get_width() - 105, 10, 100, 15, 100, "yellow", "black")
         self.game_score = Game_Score()
 
+        self.ast_imgs = [self.ast_img1, self.ast_img2, self.ast_img3, self.ast_img4]
+        self.ship = Rocket(self.rocket_img, self.screen)
+        self.spawn_asteroids()
+
+    def reset_game(self):
+        self.start = time.time()
         all_sprites.add(self.ship)
         all_sprites.add(self.asteroids)
         all_sprites.add(self.pills)
+        self.spawn_asteroids()
 
     def get_states(self):
+        time.sleep(5)
         states_to_return = []
-        states_to_return.append(self.ship.x)
+        states_to_return.append(self.ship.x.x)
         states_to_return.append(self.health.hp)
         states_to_return.append(self.fuel.hp)
 
-        if len(asteroids) >= 10:
-            for i in range(0, 10):
-                states_to_return.append(asteroids[i].position.x)
-                states_to_return.append(asteroids[i].position.y)
-                states_to_return.append(asteroids[i].speed.x)
-                states_to_return.append(asteroids[i].speed.y)
-        else :
-            init_len = len(states_to_return)
-            for asteroid in asteroids:
-                states_to_return.append(asteroid.position.x)
-                states_to_return.append(asteroid.position.y)
-                states_to_return.append(asteroid.speed.x)
-                states_to_return.append(asteroid.speed.y)
+        asteroids_info = []
+        print(len(self.asteroids))
+        for asteroid in self.asteroids:
+            asteroids_info.extend([
+                asteroid.rect.centerx,
+                asteroid.rect.centery,
+                asteroid.speed.x,
+                asteroid.speed.y
+            ])
 
-            pres_len = len(states_to_return)
-            filler = 4 * (pres_len - init_len)
+        while len(asteroids_info) < 40:
+            asteroids_info.extend([0, 0, 0, 0])
 
-            for i in range(0, filler):
-                states_to_return.append(0)
+        states_to_return.extend(asteroids_info[:40])
+        return states_to_return
+
+    def spawn_asteroids(self):
+        asteroid = Asteroid(constants.ASTEROID_SPEED, self.screen, self.ast_imgs)
+        all_sprites.add(asteroid)
+        self.asteroids.add(asteroid)
+        all_sprites.update(self.screen)
 
     def play_action(self, act):
         self.current_score = self.game_score.get_score()
@@ -311,18 +308,16 @@ class GameAI:
             self.ship.shoot()
 
         all_sprites.draw(self.screen)
-        all_sprites.update()
-        asteroid = Asteroid(constants.ASTEROID_SPEED)
-        all_sprites.add(asteroid)
-        asteroids.add(asteroid)
+        all_sprites.update(self.screen)
 
-        for asteroid in asteroids:
+
+        for asteroid in self.asteroids:
             if self.ship.rect.collidepoint(asteroid.position.x, asteroid.position.y):
                 asteroid.kill()
                 self.health.hp -= 1.5 * constants.ASTEROID_SPEED
 
         for bullet in bullets:
-            for asteroid in asteroids:
+            for asteroid in self.asteroids:
                 if asteroid.rect.collidepoint(bullet.position.x, bullet.position.y):
                     self.game_score.asteroid_hit()
                     bullet.kill()
