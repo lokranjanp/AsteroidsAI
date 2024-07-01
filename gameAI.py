@@ -9,6 +9,7 @@ all_sprites = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 pills = pygame.sprite.Group()
 
+
 def getaction(act):
     if act == [1, 0, 0, 0]:
         return "move_left"
@@ -165,6 +166,7 @@ class Bullet(pygame.sprite.Sprite):
         if self.distance > BULLET_RANGE:
             self.kill()
 
+
 class Asteroid(pygame.sprite.Sprite):
     def __init__(self, speed, screen, ast_imgs):
         super().__init__()
@@ -177,8 +179,8 @@ class Asteroid(pygame.sprite.Sprite):
         self.speed = pygame.Vector2(speed)
 
     def update(self, screen):
-        self.position.x += self.direction.x * (self.speed.x)
-        self.position.y += self.direction.y * (self.speed.y)
+        self.position.x += self.direction.x * self.speed.x
+        self.position.y += self.direction.y * self.speed.y
         self.rect.center = self.position
         if self.rect.top > screen.get_height() + 20 or self.rect.left < -20 or self.rect.right > screen.get_width() + 20:
             self.kill()
@@ -202,6 +204,7 @@ class GameAI:
         self.end = 0
         self.death_reason = ""
         self.current_score = 0
+        self.reward = 0
         self.end = 0
         self.player_accuracy = 0
         self.asteroids_hit = 0
@@ -210,7 +213,7 @@ class GameAI:
         self.screen.fill(BLACK)
         self.clock = pygame.time.Clock()
         self.run = True
-        self.actions_list = [[1,0,0,0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+        self.actions_list = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
         self.rocket_img = pygame.image.load("resources/ship.png").convert()
         self.rocket_img = pygame.transform.scale(self.rocket_img, (40, 40))
         self.rocket_img.set_colorkey(BLACK)
@@ -247,19 +250,17 @@ class GameAI:
         self.spawn_asteroids()
 
     def reset_game(self):
-        self.start = time.time()
         all_sprites.add(self.ship)
         all_sprites.add(self.asteroids)
         all_sprites.add(self.pills)
         self.spawn_asteroids()
+        self.current_score = 0
+        self.reward = 0
+        self.start = time.time()
 
     def get_states(self):
         time.sleep(5)
-        states_to_return = []
-        states_to_return.append(self.ship.x.x)
-        states_to_return.append(self.health.hp)
-        states_to_return.append(self.fuel.hp)
-
+        states_to_return = [self.ship.x.x, self.health.h, self.fuel.hp]
         asteroids_info = []
         print(len(self.asteroids))
         for asteroid in self.asteroids:
@@ -283,6 +284,8 @@ class GameAI:
         all_sprites.update(self.screen)
 
     def play_action(self, act):
+        self.done = False
+        self.spawn_asteroids()
         self.current_score = self.game_score.get_score()
         self.player_accuracy = self.game_score.get_accuracy()
         self.asteroids_hit = self.game_score.asteroids_hit
@@ -291,10 +294,12 @@ class GameAI:
             self.death_reason = "Spacecraft Health 0"
             self.ship.kill()
             self.end = time.time()
+            self.done = True
         elif self.fuel.hp <= 0:
             self.death_reason = "Spacecraft Fuel 0"
             self.ship.kill()
             self.end = time.time()
+            self.done = True
 
         self.clock.tick(constants.FPS)
         global action
@@ -310,10 +315,10 @@ class GameAI:
         all_sprites.draw(self.screen)
         all_sprites.update(self.screen)
 
-
         for asteroid in self.asteroids:
             if self.ship.rect.collidepoint(asteroid.position.x, asteroid.position.y):
                 asteroid.kill()
+                self.reward -= 15
                 self.health.hp -= 1.5 * constants.ASTEROID_SPEED
 
         for bullet in bullets:
@@ -324,10 +329,12 @@ class GameAI:
                     if self.game_score.asteroids_hit % (random.randint(1, 10)) == 0:
                         asteroid.shoot()
                     asteroid.kill()
+                    self.reward += 10
                     constants.ASTEROID_SPEED += 0.15
 
         for pill in pills:
             if self.ship.rect.collidepoint(pill.position.x, pill.position.y):
+                self.reward += 10
                 if pill.type == "Fuel Pill":
                     pill.kill()
                     self.fuel.hp += 10
@@ -339,3 +346,5 @@ class GameAI:
                     self.health.hp += 20
                     if self.health.hp > self.health.max:
                         self.health.hp = self.health.max
+
+        return self.reward, self.done, self.current_score
