@@ -1,4 +1,5 @@
 import math
+import numpy as np
 import pygame
 import random
 import time
@@ -29,11 +30,13 @@ class Game_Score:
         self.accuracy = 0
 
     def asteroid_hit(self):
+        """Increments the asteroids hit at that instance, along with score and accuracy"""
         self.asteroids_hit += 1
         self.update_score()
         self.update_accuracy()
 
     def bullet_fired(self):
+        """Increments the bullets fired by the ship"""
         self.bullets_used += 1
         self.update_score()
         self.update_accuracy()
@@ -42,16 +45,19 @@ class Game_Score:
         self.score = (self.asteroids_hit * 100) - (self.bullets_used * 2)
 
     def update_accuracy(self):
+        """Updates the accuracy of the game"""
         if self.bullets_used > 0:
             self.accuracy = self.asteroids_hit / self.bullets_used
         else:
             self.accuracy = 0
 
     def get_accuracy(self):
+        """Returns the accuracy of the player at that moment"""
         self.update_accuracy()
         return round(self.accuracy, 2)
 
     def get_score(self):
+        """Returns the score of the player at that moment"""
         self.update_score()
         return int(self.score)
 
@@ -131,11 +137,9 @@ class Rocket(pygame.sprite.Sprite):
     def update(self):
         global action
         if action == "move_left":
-            print("moved left")
             self.x.x -= self.dx
 
         if action == "move_right":
-            print("moved right")
             self.x.x += self.dx
 
         self.position += self.x
@@ -263,9 +267,11 @@ class GameAI:
         self.current_score = 0
         self.reward = 0
         self.start = time.time()
+        self.get_states()
+        constants.ASTEROID_SPEED = 2
 
     def get_states(self):
-        states_to_return = [self.ship.x.x, self.health.h, self.fuel.hp, self.game_score.accuracy, self.reward]
+        states_to_return = [self.ship.rect.centerx, self.health.h, self.fuel.hp, self.game_score.accuracy, self.reward]
         asteroids_info = []
         for asteroid in self.asteroids:
             asteroids_info.extend([
@@ -332,7 +338,7 @@ class GameAI:
             if self.ship.rect.colliderect(asteroid.rect):
                 asteroid.kill()
                 self.reward -= 15
-                self.health.hp -= 1.5 * constants.ASTEROID_SPEED
+                self.health.hp -= 1.9 * constants.ASTEROID_SPEED
 
         for bullet in bullets:
             for asteroid in self.asteroids:
@@ -345,10 +351,6 @@ class GameAI:
                     self.spawn_asteroids()
                     self.reward += 10
                     constants.ASTEROID_SPEED += 0.15
-                    print(f"Accuracy : {self.game_score.accuracy}")
-
-        if self.game_score.accuracy < 0.1:
-            self.reward -= 100
 
         for pill in pills:
             if self.ship.rect.colliderect(pill.rect):
@@ -366,5 +368,5 @@ class GameAI:
                         self.health.hp = self.health.max
 
         pygame.display.flip()
-
+        self.game_score.update_score()
         return self.reward, self.done, self.current_score

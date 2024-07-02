@@ -1,15 +1,16 @@
-import torch
 from collections import deque
 import random
 import numpy as np
+import torch
+
 from gameAI import GameAI
 from constants import *
 from DQN import *
 
-MAX_MEM = 400000
-BATCH_SIZE = 2000
+MAX_MEM = 4000
+BATCH_SIZE = 32
 
-learning_rate = 0.01
+learning_rate = 0.001
 
 
 def normalise(state):
@@ -21,11 +22,11 @@ def normalise(state):
 class Agent:
     def __init__(self):
         self.num_games = 0
-        self.epsilon = 0
+        self.epsilon = 0.3
         self.epsilon_decay = 0.995
         self.memory = deque(maxlen=MAX_MEM)
         self.model = DQN(45, 4)
-        self.trainer = QTrainer(self.model, learning_rate, 0.9)
+        self.trainer = QTrainer(self.model, learning_rate, 0.95)
 
     def get_state(self, game):
         state = game.get_states()
@@ -40,6 +41,11 @@ class Agent:
             mini_batch = random.sample(self.memory, BATCH_SIZE)
 
         states, actions, rewards, next_states, dones = zip(*mini_batch)
+        states = torch.tensor(states, dtype=torch.float)
+        actions = torch.tensor(actions, dtype=torch.int64)
+        rewards = torch.tensor(rewards, dtype=torch.float32)
+        next_states = torch.tensor(next_states, dtype=torch.float32)
+        dones = torch.tensor(dones, dtype=torch.uint8)
         self.trainer.train_step(states, actions, rewards, next_states, dones)
 
     def train_short(self, state, action, reward, next_state, done):
@@ -89,7 +95,7 @@ def train():
         if done:
             game.reset_game()
             agent.num_games += 1
-            agent.train_long()
+            #agent.train_long()
 
             if score > record:
                 record = score
