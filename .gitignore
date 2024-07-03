@@ -2,7 +2,8 @@
 asteroid_game
 game_data.csv
 shooter-graphics
-
+.idea/asteroidsAI.iml
+.idea/workspace.xml
 # Ignore game data file
 game_data.csv
 
