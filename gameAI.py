@@ -5,6 +5,7 @@ import random
 import time
 from constants import *
 import constants
+from datetime import date, datetime
 
 all_sprites = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
@@ -24,10 +25,10 @@ def getaction(act):
 
 class Game_Score:
     def __init__(self):
-        self.asteroids_hit = 0
-        self.bullets_used = 0
+        self.asteroids_hit = 1
+        self.bullets_used = 1
         self.score = 0
-        self.accuracy = 0
+        self.accuracy = 1
 
     def asteroid_hit(self):
         """Increments the asteroids hit at that instance, along with score and accuracy"""
@@ -129,7 +130,7 @@ class Rocket(pygame.sprite.Sprite):
         self.image = self.original_image.copy()
         self.rect = self.image.get_rect(center=(screen.get_width() // 2, screen.get_height() - 100))
         self.angle = 90
-        self.dx = 0.1
+        self.dx = 0.2
         self.position = pygame.Vector2(self.rect.center)
         self.x = pygame.Vector2(0, 2)
         self.deceleration = 0.95
@@ -137,10 +138,10 @@ class Rocket(pygame.sprite.Sprite):
     def update(self):
         global action
         if action == "move_left":
-            self.x.x -= self.dx
+            self.x.x -= self.dx + np.random.randint(1, 30)/100
 
         if action == "move_right":
-            self.x.x += self.dx
+            self.x.x += self.dx + np.random.randint(1, 30)/100
 
         self.position += self.x
         self.x *= self.deceleration
@@ -211,10 +212,11 @@ class GameAI:
     def __init__(self):
         pygame.init()
         pygame.font.init()
-        self.start = 0
-        self.end = 0
+        self.bullet_cooldown = 0.55
+        self.gamedate = date.today()
+        self.gametime = 0
+        self.last_fired = 0
         self.death_reason = ""
-        self.current_score = 0
         self.reward = 0
         self.end = 0
         self.player_accuracy = 0
@@ -225,6 +227,7 @@ class GameAI:
         self.clock = pygame.time.Clock()
         self.run = True
         self.actions_list = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+
         self.rocket_img = pygame.image.load("resources/ship.png").convert()
         self.rocket_img = pygame.transform.scale(self.rocket_img, (40, 40))
         self.rocket_img.set_colorkey(BLACK)
@@ -254,6 +257,9 @@ class GameAI:
         self.reset_game()
 
     def reset_game(self):
+        self.start = time.time()
+        self.end = 0
+        self.gametime = datetime.now().time().strftime("%H:%M:%S")
         all_sprites.empty()
         self.ship = Rocket(self.rocket_img, self.screen)
         self.asteroids = pygame.sprite.Group()
@@ -264,7 +270,6 @@ class GameAI:
         all_sprites.add(self.ship)
         all_sprites.add(self.asteroids)
         all_sprites.add(self.pills)
-        self.current_score = 0
         self.reward = 0
         self.start = time.time()
         self.get_states()
@@ -293,25 +298,27 @@ class GameAI:
         self.asteroids.add(asteroid)
         all_sprites.update()
 
+    def can_fire_bullet(self):
+        if time.time() - self.last_fired >= self.bullet_cooldown + np.random.randint(0, 20)/100:
+            self.last_fired = time.time()
+            return True
+        return False
+
     def play_action(self, act):
-        self.done = False
-        self.current_score = self.game_score.get_score()
-        self.player_accuracy = self.game_score.get_accuracy()
+        self.game_over = False
         self.asteroids_hit = self.game_score.asteroids_hit
 
         if self.health.hp <= 0:
             self.death_reason = "Spacecraft Health 0"
             self.ship.kill()
             self.end = time.time()
-            self.reset_game()
-            self.done = True
+            self.game_over = True
 
         elif self.fuel.hp <= 0:
             self.death_reason = "Spacecraft Fuel 0"
             self.ship.kill()
             self.end = time.time()
-            self.reset_game()
-            self.done = True
+            self.game_over = True
 
         self.clock.tick(constants.FPS)
         global action
@@ -321,12 +328,15 @@ class GameAI:
             if i.type == pygame.QUIT:
                 pygame.quit()
 
-        if action == 'fire':
+        if action == 'fire' and self.can_fire_bullet():
             self.ship.shoot()
             self.game_score.bullet_fired()
 
         if action == 'move_left' or action == 'move_right':
             self.fuel.hp -= 0.1 * (constants.ASTEROID_SPEED/15)
+
+        if action == 'idle':
+            pass
 
         self.screen.fill(BLACK)
         all_sprites.update()
@@ -338,7 +348,7 @@ class GameAI:
             if self.ship.rect.colliderect(asteroid.rect):
                 asteroid.kill()
                 self.reward -= 15
-                self.health.hp -= 1.9 * constants.ASTEROID_SPEED
+                self.health.hp -= 1.5 * constants.ASTEROID_SPEED
 
         for bullet in bullets:
             for asteroid in self.asteroids:
@@ -369,4 +379,4 @@ class GameAI:
 
         pygame.display.flip()
         self.game_score.update_score()
-        return self.reward, self.done, self.current_score
+        return self.reward, self.game_over, self.game_score.get_score()

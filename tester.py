@@ -1,15 +1,18 @@
+from agent import Agent
+from gameAI import GameAI
+import numpy as np
 
-# Load the model
-agent.load("model.pth")
+agent = Agent()
+env = GameAI()
+
+agent.load("./model/model.pth")
 
 # Evaluate the model
 for e in range(10):
-    state = env.reset()
-    state = np.reshape(state, [1, state_size])
+    state = env.reset_game()
     for time in range(500):
-        action = agent.act(state)
-        next_state, reward, done, _ = env.step(action)
-        state = np.reshape(next_state, [1, state_size])
+        action = agent.get_action(state)
+        reward, done, score = env.play_action(action)
         if done:
             print(f"test episode: {e+1}/10, score: {time}")
             break
