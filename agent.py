@@ -10,7 +10,6 @@ from DQN import *
 
 MAX_MEM = 4000
 BATCH_SIZE = 32
-
 learning_rate = 0.001
 
 
