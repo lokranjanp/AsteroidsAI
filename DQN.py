@@ -12,6 +12,7 @@ class DQN(nn.Module):
         self.fc3 = nn.Linear(128, action_size)
 
     def forward(self, x):
+        """Forward prop on the Linear Neural Network"""
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         x = self.fc3(x)
@@ -37,6 +38,7 @@ class QTrainer:
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
 
     def train_step(self, state, action, reward, next_state, done):
+        """Based on each action/step carried out, trains the NN"""
         state = state.clone().detach().float().to(self.device)
         next_state = torch.tensor(next_state, dtype=torch.float).to(self.device)
 

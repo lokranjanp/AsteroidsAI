@@ -29,10 +29,12 @@ class Agent:
         self.trainer = QTrainer(self.model, learning_rate, 0.95)
 
     def get_state(self, game):
+        """Retrieves the state of the game at that instance and returns a np array"""
         state = game.get_states()
         return np.array(state, dtype=int)
 
     def remember(self, state, action, reward, next_state, done):
+        """Helps in evaluation for deep learning purpose"""
         self.memory.append((state, action, reward, next_state, done))
 
     def train_long(self):
@@ -49,14 +51,17 @@ class Agent:
         self.trainer.train_step(states, actions, rewards, next_states, dones)
 
     def train_short(self, state, action, reward, next_state, done):
+        """Performs a computation on the state using the model and checks with the next state"""
         self.trainer.train_step(state, action, reward, next_state, done)
 
     def load(self, model_path):
+        """Helps the saved model be used on"""
         # Load the model state dictionary
         self.model.load_state_dict(torch.load(model_path))
         self.model.eval()  # Set the model to evaluation mode
 
     def csv_saver(self, game_date, game_time, elapsed_time, reason, score, accuracy, hits):
+        """Records important data on a single game iteration for inferencing purpose"""
         file_exists = os.path.exists(DATA_FILE) == 1
 
         if file_exists:
@@ -77,6 +82,7 @@ class Agent:
                              hits])
 
     def get_action(self, state):
+        """Returns actions for given state as list"""
         self.epsilon = 100 - self.num_games
         final_move = [0, 0, 0, 0]
 
@@ -112,8 +118,7 @@ def train():
             game.spawn_asteroids()
 
         reward, done, score = game.play_action(move)
-        print(score)
-        #print(f"Reward : {reward} Done : {done} Score: {score}")
+        print(f"Reward : {reward}, Done : {done}, Score: {score}")
 
         second_state = agent.get_state(game)
         agent.train_short(first_state, move, reward, second_state, done)
