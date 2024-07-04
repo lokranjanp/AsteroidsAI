@@ -136,6 +136,7 @@ class Rocket(pygame.sprite.Sprite):
         self.deceleration = 0.95
 
     def update(self):
+        """Allows the player to control the movement of his spaceship on the x-axis"""
         global action
         if action == "move_left":
             self.x.x -= self.dx + np.random.randint(1, 30)/100
@@ -155,6 +156,7 @@ class Rocket(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.position)
 
     def shoot(self):
+        """The player shoots a bullet from his controllable spaceship upwards"""
         bullet_dir = pygame.Vector2(math.cos(math.radians(self.angle)), -math.sin(math.radians(self.angle)))
         bullet = Bullet(self.position, bullet_dir)
         all_sprites.add(bullet)
@@ -198,6 +200,7 @@ class Asteroid(pygame.sprite.Sprite):
             self.kill()
 
     def shoot(self):
+        """The asteroid drops a health/fuel pill which acts as a randomised reward"""
         pill_dir = pygame.Vector2(math.cos(math.radians(90)), math.sin(math.radians(90)))
         pill_type = random.randint(1, 100) % 2
         if pill_type:
@@ -257,6 +260,7 @@ class GameAI:
         self.reset_game()
 
     def reset_game(self):
+        """Resets all the important variables to ensure a new game iteration data is recorded"""
         self.start = time.time()
         self.end = 0
         self.gametime = datetime.now().time().strftime("%H:%M:%S")
@@ -276,6 +280,7 @@ class GameAI:
         constants.ASTEROID_SPEED = 2
 
     def get_states(self):
+        """Returns a list of the important parameters"""
         states_to_return = [self.ship.rect.centerx, self.health.h, self.fuel.hp, self.game_score.accuracy, self.reward]
         asteroids_info = []
         for asteroid in self.asteroids:
@@ -293,18 +298,21 @@ class GameAI:
         return states_to_return
 
     def spawn_asteroids(self):
+        """Instantiates and adds an asteroid to concerned groups"""
         asteroid = Asteroid(constants.ASTEROID_SPEED, self.screen, self.ast_imgs)
         all_sprites.add(asteroid)
         self.asteroids.add(asteroid)
         all_sprites.update()
 
     def can_fire_bullet(self):
+        """Checks if the player can fire a bullet"""
         if time.time() - self.last_fired >= self.bullet_cooldown + np.random.randint(0, 20)/100:
             self.last_fired = time.time()
             return True
         return False
 
     def play_action(self, act):
+        """Plays the action suggested by the agent"""
         self.game_over = False
         self.asteroids_hit = self.game_score.asteroids_hit
 
