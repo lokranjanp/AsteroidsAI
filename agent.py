@@ -118,8 +118,7 @@ def train():
             game.spawn_asteroids()
 
         reward, done, score = game.play_action(move)
-        print(score)
-        #print(f"Reward : {reward} Done : {done} Score: {score}")
+        print(f"Reward : {reward}, Done : {done}, Score: {score}")
 
         second_state = agent.get_state(game)
         agent.train_short(first_state, move, reward, second_state, done)

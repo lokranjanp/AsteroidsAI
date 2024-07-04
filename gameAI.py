@@ -103,6 +103,7 @@ class Health_Pill(pygame.sprite.Sprite):
 
 class Healthbar(pygame.sprite.Sprite):
     def __init__(self, x, y, w, h, maxh, over, below):
+        super().__init__()
         self.x = x
         self.y = y
         self.w = w
@@ -123,6 +124,7 @@ class Healthbar(pygame.sprite.Sprite):
         screen.blit(fuel_text, (screen.get_width() - 118, 10))
 
 
+# noinspection PyTypeChecker,PyGlobalUndefined
 class Rocket(pygame.sprite.Sprite):
     def __init__(self, rocket_img, screen):
         pygame.sprite.Sprite.__init__(self)
@@ -181,6 +183,7 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
 
 
+# noinspection PyTypeChecker
 class Asteroid(pygame.sprite.Sprite):
     def __init__(self, speed, screen, ast_imgs):
         super().__init__()
@@ -255,6 +258,7 @@ class GameAI:
         self.pill_green = pygame.image.load("resources/bolt_gold.png")
         self.pill_green = pygame.transform.scale(self.pill_green, (20, 20))
         self.pill_green.set_colorkey(BLACK)
+        # noinspection SpellCheckingInspection
         self.ast_imgs = [self.ast_img1, self.ast_img2, self.ast_img3, self.ast_img4]
 
         self.reset_game()
