@@ -3,10 +3,10 @@ import random
 import numpy as np
 import torch
 import csv
-
+import os
 from gameAI import GameAI
 from constants import *
-from DQN import *
+from TQN import TransformerQNetwork, QTrainer
 
 MAX_MEM = 4000
 BATCH_SIZE = 32
@@ -15,7 +15,7 @@ learning_rate = 0.001
 
 def normalise(state):
     mean = np.mean(state)
-    std = np.std(state)
+    std = np.std(state) if np.std(state) > 0 else 1
     return np.array([(state - mean) / std for state in state])
 
 
@@ -25,13 +25,13 @@ class Agent:
         self.epsilon = 0.3
         self.epsilon_decay = 0.995
         self.memory = deque(maxlen=MAX_MEM)
-        self.model = DQN(45, 4)
+        self.model = TransformerQNetwork(45, 4)
         self.trainer = QTrainer(self.model, learning_rate, 0.95)
 
     def get_state(self, game):
         """Retrieves the state of the game at that instance and returns a np array"""
         state = game.get_states()
-        return np.array(state, dtype=int)
+        return np.array(state, dtype=float)
 
     def remember(self, state, action, reward, next_state, done):
         """Helps in evaluation for deep learning purpose"""
@@ -56,41 +56,36 @@ class Agent:
 
     def load(self, model_path):
         """Helps the saved model be used on"""
-        # Load the model state dictionary
         self.model.load_state_dict(torch.load(model_path))
-        self.model.eval()  # Set the model to evaluation mode
+        self.model.eval()
 
     def csv_saver(self, game_date, game_time, elapsed_time, reason, score, accuracy, hits):
         """Records important data on a single game iteration for inferencing purpose"""
-        file_exists = os.path.exists(DATA_FILE) == 1
-
-        if file_exists:
-            file_empty = os.path.getsize(DATA_FILE) == 0
-        else:
-            file_empty = True
+        file_exists = os.path.exists(DATA_FILE)
+        file_empty = os.path.getsize(DATA_FILE) == 0 if file_exists else True
 
         if not file_exists:
             with open(DATA_FILE, 'w', newline='') as file:
                 writer = csv.writer(file)
                 if file_empty:
-                    writer.writerow(
-                        ['Game Date', 'Game Time', 'Elapsed Time', 'Reason', 'Score', 'Accuracy', 'Asteroids Hit'])
+                    writer.writerow([
+                        'Game Date', 'Game Time', 'Elapsed Time', 'Reason', 'Score', 'Accuracy', 'Asteroids Hit'
+                    ])
 
         with open(DATA_FILE, 'a', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow([game_date, game_time, elapsed_time, reason, score, accuracy,
-                             hits])
+            writer.writerow([game_date, game_time, elapsed_time, reason, score, accuracy, hits])
 
     def get_action(self, state):
         """Returns actions for given state as list"""
         self.epsilon = 100 - self.num_games
         final_move = [0, 0, 0, 0]
 
-        if np.random.rand() < self.epsilon/100:
+        if np.random.rand() < self.epsilon / 100:
             move = random.randint(0, 3)
             final_move[move] = 1
         else:
-            state00 = state.clone().detach()
+            state00 = torch.tensor(state, dtype=torch.float).unsqueeze(0)
             pred = self.model(state00)
             move = torch.argmax(pred).item()
             final_move[move] = 1
@@ -129,7 +124,6 @@ def train():
             time_elap = round(game.end - game.start, 2)
             agent.csv_saver(game.gamedate, game.gametime, time_elap, game.death_reason,
                             game.game_score.get_score(), game.game_score.get_accuracy(), game.game_score.asteroids_hit)
-            #agent.train_long()
 
             if score > record:
                 print("Score when game ends : ", score)
