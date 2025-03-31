@@ -10,19 +10,23 @@ class TransformerQNetwork(nn.Module):
         super(TransformerQNetwork, self).__init__()
         self.embedding = nn.Linear(state_size, dim_feedforward)
 
-        encoder_layer = nn.TransformerEncoderLayer(
+        self.encoder_layer = nn.TransformerEncoderLayer(
             d_model=dim_feedforward,
             nhead=heads,
             dim_feedforward=dim_feedforward,
-            activation="relu"
+            batch_first=True,  # Ensures batch is first dimension
+            activation = "relu"
         )
-        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+        self.transformer = nn.TransformerEncoder(self.encoder_layer, num_layers=num_layers)
 
         self.fc_out = nn.Linear(dim_feedforward, action_size)
 
     def forward(self, x):
         x = self.embedding(x)  # Convert state vector to embedding space
+        if x.dim() == 1:
+            x = x.unsqueeze(0)  # Ensure batch dimension
         x = rearrange(x, 'b d -> 1 b d')  # Reshape for transformer (seq_len=1)
+
         x = self.transformer(x)
         x = rearrange(x, '1 b d -> b d')  # Reshape back
         return self.fc_out(x)  # Output Q-values
