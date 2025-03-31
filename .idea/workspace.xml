@@ -5,11 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2379143b-f9f3-4e4c-b017-f3533b7ae0c5" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/asteroidsAI.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/asteroidsAI.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/agent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/constants.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gameAI.py" beforeDir="false" afterPath="$PROJECT_DIR$/gameAI.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/model.pth" beforeDir="false" afterPath="$PROJECT_DIR$/model/model.pth" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,12 +36,12 @@
     &quot;assignee&quot;: &quot;lokranjanp&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/lokranjanp/asteroidsAI.git&quot;,
-    &quot;accountId&quot;: &quot;1c67f641-cdf7-4dcc-884b-0f1648b98625&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "git@github.com:lokranjanp/asteroidsAI.git",
+    "accountId": "1eaf7bfe-6738-4758-89ed-3ff7680255ca"
   }
-}</component>
+}]]></component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/main.py" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -68,7 +66,7 @@
     &quot;Python.main.executor&quot;: &quot;Run&quot;,
     &quot;Python.tester.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;last_opened_file_path&quot;: &quot;/Users/lokranjan/PycharmProjects/asteroidsAI&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -88,6 +86,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/documents" />
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
@@ -101,7 +100,6 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.10 (asteroidsAI)" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -125,8 +123,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.18034.82" />
-        <option value="bundled-python-sdk-975db3bf15a3-2767605e8bc2-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.18034.82" />
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.19072.16" />
+        <option value="bundled-python-sdk-8336bb23522e-2767605e8bc2-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.19072.16" />
       </set>
     </attachedChunks>
   </component>
@@ -144,6 +142,10 @@
       <workItem from="1720017095941" duration="1136000" />
       <workItem from="1720060019517" duration="7863000" />
       <workItem from="1720079308441" duration="2620000" />
+      <workItem from="1727437479745" duration="234000" />
+      <workItem from="1728890589274" duration="6909000" />
+      <workItem from="1729489212235" duration="14654000" />
+      <workItem from="1738667757752" duration="369000" />
     </task>
     <servers />
   </component>

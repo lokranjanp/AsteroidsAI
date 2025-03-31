@@ -3,7 +3,6 @@ import random
 import numpy as np
 import torch
 import csv
-
 from gameAI import GameAI
 from constants import *
 from DQN import *
