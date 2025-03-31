@@ -32,7 +32,7 @@ class TransformerQNetwork(nn.Module):
         return self.fc_out(x)  # Output Q-values
 
     def save_model(self, file_name='model.pth'):
-        model_folder = './model'
+        model_folder = './TQN_model'
         if not os.path.exists(model_folder):
             os.makedirs(model_folder)
 
