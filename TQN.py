@@ -4,7 +4,6 @@ import torch.optim as optim
 import os
 from einops import rearrange
 
-
 class TransformerQNetwork(nn.Module):
     def __init__(self, state_size, action_size, num_layers=2, heads=4, dim_feedforward=256):
         super(TransformerQNetwork, self).__init__()
