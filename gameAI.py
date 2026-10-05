@@ -82,7 +82,7 @@ class Fuel_Pill(pygame.sprite.Sprite):
             self.kill()
 
 
-class Health_Pill(pygame.sprite.Sprite):
+class HealthPill(pygame.sprite.Sprite):
     def __init__(self, position, direction):
         super().__init__()
         self.image = pygame.image.load("resources/pill_green.png").convert_alpha()
@@ -209,7 +209,7 @@ class Asteroid(pygame.sprite.Sprite):
         if pill_type:
             pill = Fuel_Pill(self.position, pill_dir)
         else:
-            pill = Health_Pill(self.position, pill_dir)
+            pill = HealthPill(self.position, pill_dir)
         all_sprites.add(pill)
         pills.add(pill)
 

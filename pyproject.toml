@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asteroids-ai"
+version = "2.0.0"
+description = "A deterministic vertical dodger-shooter reinforcement-learning benchmark"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "gymnasium>=0.29,<2",
+  "numpy>=1.24,<3",
+  "pygame>=2.5,<3",
+  "torch>=2.0",
+  "tensorboard>=2.14"
+]
+
+[project.scripts]
+asteroids-play = "asteroids_ai.play:main"
+asteroids-train = "asteroids_ai.train:main"
+asteroids-evaluate = "asteroids_ai.evaluate:main"
+asteroids-benchmark = "asteroids_ai.benchmark:main"
+
+[tool.setuptools.packages.find]
+include = ["asteroids_ai*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+

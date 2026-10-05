@@ -1,0 +1,12 @@
+{
+  "model": "transformer",
+  "steps": 500000,
+  "seed": 0,
+  "device": "auto",
+  "output": "runs/transformer_seed_0",
+  "dqn": {
+    "prioritized_replay": true,
+    "n_step": 3
+  }
+}
+

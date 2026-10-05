@@ -141,5 +141,9 @@ venv.bak/
 *.sublime-project
 *.sublime-workspace
 
+# AsteroidsAI v2 training artifacts
+runs/
+*.pth.tmp
+
 # Anaconda
 anaconda-project.yml
